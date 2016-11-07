@@ -132,22 +132,6 @@ def feature_selection(train_x, train_y=None, solver='pca', n_components=None, k=
         print 'wrong solver type, we only take pca, extraTree, linearSVC and kBest'
 
 
-def verify(model, test_x, test_y):
-    correct = 0.0
-    for index in range(1, len(test_x)):
-        species = model.predict(test_x[index])
-        # print "------"
-        # print species
-        # print test_y[index]
-        # print "------"
-
-        if species == test_y[index]:
-            correct = correct + 1
-
-    print correct
-    print correct / len(test_y)
-
-
 def logistic_model(train_x, train_y, test_x, test_y):
     """
     when all the set to be ready, using logistic model to train
@@ -168,33 +152,19 @@ def logistic_model(train_x, train_y, test_x, test_y):
     :return:
     score, mean accuracy among all test data
     """
-    " liblinear "
+    # liblinear
     log_regre = lm.LogisticRegression(n_jobs=-1, solver='liblinear', max_iter=100)
 
-    " multi class using lbfgs "
+    # multi class using lbfgs
     # log_regre = lm.LogisticRegression(penalty='l2', solver='lbfgs', max_iter=100,
     #                                 multi_class='multinomial', n_jobs=8)
 
-    " multi class using newton-cg "
+    # multi class using newton-cg
     # log_regre = lm.LogisticRegression(penalty='l2', solver='newton-cg', max_iter=5000,
     #                                 multi_class='multinomial', n_jobs=8)
 
     log_regre.fit(train_x, train_y)
-
-    # print log_regre.score(train_x, train_y)
-    score = log_regre.score(test_x, test_y)
-
-    # verifing(log_regre, test_x, test_y)
-
-    # " old li "
-    # lr = lm.LogisticRegression()
-    # lr.fit(train_x, train_y)
-    # lm.LogisticRegression(penalty='L2', max_iter=2)
-    #
-    # print "old li: ", lr.score(train_x, train_y)
-    # print(lr.score(test_x, test_y))
-
-    return score
+    return log_regre.score(test_x, test_y)
 
 
 def logistic_model_sgd(train_x, train_y, test_x, test_y):
@@ -218,11 +188,6 @@ def logistic_model_sgd(train_x, train_y, test_x, test_y):
     sgd = SGDClassifier(loss='log', penalty='l2', n_iter=1000,
                         n_jobs=-1)
     sgd.fit(train_x, train_y)
-
-    # print sgd.score(train_x, train_y)
-
-    # verifing(sgd, test_x, test_y)
-
     return sgd.score(test_x, test_y)
 
 
@@ -231,13 +196,11 @@ def main():
     df_test = pd.DataFrame.from_csv("/home/troy/Kaggle/Leaf Classification/data/test.csv")
 
     x, y = get_x_y(df_train)
-
-    x = feature_selection(x, y, solver='linearSVC', n_components=5, k=10)
-
+    x = feature_selection(x, y, solver='pca', n_components=5, k=10)
+    
+    # check how many feature select
     print x.shape
-
     x = pd.DataFrame(x)
-
     x['species'] = pd.Series(y, index=x.index)
 
     train, test = get_train_test(x)
